@@ -87,7 +87,23 @@ public class MainActivity extends Activity {
             List<ScanResult> results=new ArrayList<>(wifiManager.getScanResults()); Collections.sort(results, Comparator.comparingInt((ScanResult x)->x.level).reversed()); scanResults.removeAllViews(); if(results.isEmpty()){scanSummary.setText("No access points reported. Check Location and Wi‑Fi settings.");return;} scanSummary.setText(results.size()+" access point"+(results.size()==1?"":"s")+" found • strongest first"); int shown=0; for(ScanResult r:results){ if(shown++>=50)break; LinearLayout block=new LinearLayout(this); block.setOrientation(LinearLayout.VERTICAL); block.setPadding(0,dp(8),0,dp(8)); String name=clean(r.SSID); if(name.equals("Unavailable")||name.isEmpty())name="Hidden network"; TextView n=text(name,16,ink);n.setTypeface(Typeface.DEFAULT,Typeface.BOLD);block.addView(n); String line=r.BSSID+"  •  "+signal(r.level); block.addView(text(line,13,muted)); String channelLine="Channel "+channel(r.frequency)+"  •  "+band(r.frequency)+"  •  "+frequency(r.frequency)+"  •  "+channelWidth(r); TextView channelText=text(channelLine,14,green); channelText.setTypeface(Typeface.DEFAULT,Typeface.BOLD); block.addView(channelText); String extra=security(r.capabilities)+"  •  "+standard(r)+"  •  centers "+centerFrequencies(r); block.addView(text(extra,13,muted)); String flags="Age "+scanAge(r.timestamp)+"  •  "+(r.isPasspointNetwork()?"Passpoint":"Non‑Passpoint")+"  •  "+(r.is80211mcResponder()?"802.11mc responder":"No 802.11mc flag"); if(r.operatorFriendlyName!=null&&r.operatorFriendlyName.length()>0)flags+="  •  "+r.operatorFriendlyName; block.addView(text(flags,12,muted)); scanResults.addView(block); }
         }catch(SecurityException e){scanSummary.setText("Android denied access to scan results. Check Location and Nearby devices permissions.");}catch(RuntimeException e){scanSummary.setText("Could not read the Wi‑Fi scan results. Please try again.");}
     }
-    private String security(String caps){ if(caps==null||caps.isEmpty())return "Open / unknown security"; String s=caps.replace("["," ").replace("]","").trim(); if(s.contains("SAE")||s.contains("WPA3"))return "WPA3 / "+s; if(s.contains("WEP"))return "WEP / "+s; if(s.contains("WPA"))return "WPA / "+s; return s; }
+    private String security(String caps){
+        if(caps==null||caps.isEmpty())return "Security: Open / unknown";
+        String raw=caps.replace("["," ").replace("]","").trim(); String u=raw.toUpperCase(Locale.US); String label;
+        boolean sae=u.contains("SAE")||u.contains("WPA3"); boolean psk=u.contains("PSK"); boolean eap=u.contains("EAP"); boolean owe=u.contains("OWE"); boolean wep=u.contains("WEP");
+        if(u.contains("SUITE_B_192")||u.contains("EAP_SUITE_B_192")) label="WPA3-Enterprise";
+        else if(sae&&psk) label="WPA2/WPA3-Personal transition";
+        else if(sae) label="WPA3-Personal";
+        else if(owe) label="WPA3-Enhanced Open (OWE)";
+        else if(eap&&u.contains("WPA2")) label="WPA2-Enterprise";
+        else if(eap&&u.contains("WPA")) label="WPA-Enterprise";
+        else if(psk&&u.contains("WPA2")) label="WPA2-Personal";
+        else if(psk&&u.contains("WPA")) label="WPA-Personal";
+        else if(wep) label="WEP";
+        else if(u.contains("ESS")) label="Open";
+        else label="Unknown";
+        return "Security: "+label+"  •  "+raw;
+    }
     private String standard(ScanResult r){ if(Build.VERSION.SDK_INT<30)return "Standard unavailable"; switch(r.getWifiStandard()){case 8:return "802.11be";case 7:return "802.11ad";case 6:return "802.11ax";case 5:return "802.11ac";case 4:return "802.11n";case 1:return "Legacy 802.11";default:return "Standard unknown";} }
     private String channelWidth(ScanResult r){ if(Build.VERSION.SDK_INT<23)return "Width unavailable"; switch(r.channelWidth){case 0:return "20 MHz";case 1:return "40 MHz";case 2:return "80 MHz";case 3:return "160 MHz";case 4:return "80+80 MHz";default:return "Width unknown";} }
     private String centerFrequencies(ScanResult r){ if(r.centerFreq0<=0)return "unknown"; return r.centerFreq1>0?r.centerFreq0+"/"+r.centerFreq1+" MHz":r.centerFreq0+" MHz"; }
