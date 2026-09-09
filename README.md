@@ -12,7 +12,7 @@ A small, dependency-light Android app that displays the current Wi‑Fi connecti
 - Android network validation status
 - Timed HTTPS reachability test
 - Nearby Wi‑Fi scan with up to 50 access points, sorted by signal strength
-- Per-access-point SSID, BSSID, RSSI, frequency, channel, channel width, center frequency, security capabilities, Wi‑Fi standard, scan age, Passpoint, 802.11mc, carrier-merged, and operator metadata when available
+- Per-access-point SSID, BSSID, RSSI, explicit band/channel/frequency, channel width, center frequency, security capabilities, Wi‑Fi standard, scan age, Passpoint, 802.11mc, and operator metadata when available
 
 ## Build
 
