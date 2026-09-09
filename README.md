@@ -25,3 +25,5 @@ The included `.github/workflows/build-apk.yml` builds a debug APK automatically 
 The app requests the Android permissions needed to read Wi‑Fi identity information. On newer Android versions, the OS may still redact SSID/BSSID unless Location is enabled.
 
 Android controls scan frequency and may return cached results or reject a scan to protect battery life. The app therefore reports the scan result Android provides rather than attempting to bypass those limits.
+
+The scan path also checks that Wi‑Fi and Location services are enabled and handles permission or scan-throttling failures in the UI instead of terminating the app.
